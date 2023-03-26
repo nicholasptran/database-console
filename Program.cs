@@ -1,5 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.ComponentModel.DataAnnotations;
+
+public class Student
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = default!;
+    public DateTime? DateOfBirth { get; set; }
+    public byte[]? Photo { get; set; }
+    public decimal Height { get; set; }
+    public float Weight { get; set; }
+
+    public Grade? Grade { get; set; }
+}
+
+public class Grade
+{
+    public int GradeId { get; set; }
+    public string GradeName { get; set; }
+    public string Section { get; set; }
+
+    public ICollection<Student> Students { get; set; }
+}
+
+public class Course
+{
+    public int CourseId { get; set; }
+    public string CourseName { get; set; } = default!;
+}
 
 namespace DatabaseConsole
 {
@@ -7,79 +35,70 @@ namespace DatabaseConsole
     {
         static void Main(string[] args)
         {
-            using (var db = new BloggingContext())
+            using (var context = new SchoolContext())
             {
-                // Create and save a new Blog
-                Console.Write("Enter a name for a new Blog: ");
-                var name = Console.ReadLine();
-
-                var blog = new Blog { Name = name };
-                db.Blogs.Add(blog);
-                db.SaveChanges();
-
-                // Display all Blogs from the database
-                var query = from b in db.Blogs
-                            orderby b.Name
-                            select b;
-
-                Console.WriteLine("All blogs in the database:");
-                foreach (var item in query)
+                // check for null input
+                while (true)
                 {
-                    Console.WriteLine(item.Name);
-                }
+                    try
+                    {
+                        Console.WriteLine("Enter the student's name: ");
+                        var name = Console.ReadLine();
 
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
+                        Console.WriteLine("Enter their height: ");
+                        var height = Console.ReadLine();
+
+                        Console.WriteLine("Enter their weight");
+                        var weight = Console.ReadLine();
+
+                        if (name != null && height != null && weight != null)
+                        {
+                            var student = new Student()
+                            {
+                                // uppercase first letter
+                                StudentName = (char.ToUpper(name[0]) + name.Substring(1)),
+                                Height = Convert.ToDecimal(height),
+                                Weight = Convert.ToSingle(weight)
+
+                            };
+
+                            context.Students.Add(student);
+                            context.SaveChanges();
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Cannot be empty");
+                        continue;
+                    }
+                }
+                var studentQuery = context.Students
+                                   .Include(s => s.Grade)
+                                   .ToList();
+
+                Console.WriteLine("Current students: ");
+                // Console.WriteLine(studentQuery);
+                foreach (var item in studentQuery)
+                {
+                    Console.WriteLine(item.StudentName);
+                }
             }
         }
     }
-
-    public class Blog
-    {
-        public int BlogId { get; set; }
-        public string Name { get; set; }
-        public string Url { get; set; }
-
-        public virtual List<Post> Posts { get; set; }
-    }
-
-    public class Post
-    {
-        public int PostId { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
-
-        public int BlogId { get; set; }
-        public virtual Blog Blog { get; set; }
-    }
-
-    public class User
-    {
-        [Key]
-        public string Username { get; set; }
-        public string DisplayName { get; set; }
-    }
-
-    public class BloggingContext : DbContext
-    {
-        string ConnString = Environment.GetEnvironmentVariable("CONN_STRING");
-
-        public DbSet<Blog> Blogs { get; set; }
-        public DbSet<Post> Posts { get; set; }
-        public DbSet<User> Users { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer(ConnString);
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<User>()
-            .Property(u => u.DisplayName)
-            .HasColumnName("display_name");
-        }
-    }
-
-
 }
+
+public class SchoolContext : DbContext
+{
+    string? ConnString = Environment.GetEnvironmentVariable("CONN_STRING");
+
+    public DbSet<Student> Students { get; set; } = default!;
+    public DbSet<Grade> Grades { get; set; } = default!;
+    public DbSet<Course> Courses { get; set; } = default!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(ConnString);
+    }
+}
+
