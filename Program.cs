@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.ComponentModel.DataAnnotations;
 
 public class Student
@@ -59,7 +58,6 @@ namespace DatabaseConsole
                                 StudentName = (char.ToUpper(name[0]) + name.Substring(1)),
                                 Height = Convert.ToDecimal(height),
                                 Weight = Convert.ToSingle(weight)
-
                             };
 
                             context.Students.Add(student);
@@ -74,14 +72,13 @@ namespace DatabaseConsole
                     }
                 }
                 var studentQuery = context.Students
-                                   .Include(s => s.Grade)
-                                   .ToList();
+                                   .AsEnumerable();
 
                 Console.WriteLine("Current students: ");
                 // Console.WriteLine(studentQuery);
                 foreach (var item in studentQuery)
                 {
-                    Console.WriteLine(item.StudentName);
+                    Console.WriteLine($"Name: {item.StudentName}  Height: {item.Height}  Weight: {item.Weight}");
                 }
             }
         }
