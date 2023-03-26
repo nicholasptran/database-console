@@ -1,32 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-
-public class Student
-{
-    public int StudentId { get; set; }
-    public string StudentName { get; set; } = default!;
-    public DateTime? DateOfBirth { get; set; }
-    public byte[]? Photo { get; set; }
-    public decimal Height { get; set; }
-    public float Weight { get; set; }
-
-    public Grade? Grade { get; set; }
-}
-
-public class Grade
-{
-    public int GradeId { get; set; }
-    public string GradeName { get; set; }
-    public string Section { get; set; }
-
-    public ICollection<Student> Students { get; set; }
-}
-
-public class Course
-{
-    public int CourseId { get; set; }
-    public string CourseName { get; set; } = default!;
-}
+using Models;
 
 namespace DatabaseConsole
 {
